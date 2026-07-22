@@ -6,6 +6,7 @@ class Commands {
 
     displayRoutes(prefix) {
         const routes = this.getRoutes(prefix);
+        routes.sort();
         for (const route of routes) {
             const signature = cmds.routes[route].toString().split(/\n/g).shift().match(/\[.*?\]/);
             if (signature && signature.length) {
@@ -13,9 +14,9 @@ class Commands {
                     .replace(/\[/g, "<")
                     .replace(/]/g, ">")
                     .replace(/, /g, "> <");
-                console.log("\t%s %s", route, opts);
+                console.log("  > %s %s", route, opts);
             } else {
-                console.log("\t%s", route);
+                console.log("  > %s", route);
             }
         }
     }
@@ -51,6 +52,9 @@ class Commands {
             }
         }
         if (tokens.length === 0) {
+            console.log("fit - a fitness tracking platform");
+            console.log("---------------------------------");
+            console.log("available commands:");
             cmds.displayRoutes();
         }
     }
