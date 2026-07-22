@@ -2,9 +2,15 @@ import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
 
 data.workouts = data.workouts ?? {};
+data.workout = data.workout ?? null;
 
 cmds.register("workout", function() {
     console.log("workout - a series of exercises");
+    if (data.workout === null) {
+        console.log("no workout selected.");
+    } else {
+        console.log("selected workout: (%s) '%s'", data.workout.id, data.workout.name);
+    }
     console.log("-------------------------------");
     console.log("options:");
     cmds.displayRoutes("workout ");
@@ -25,6 +31,34 @@ cmds.register("workout list", async function() {
     for (const workout of data.workouts) {
         console.log("\t- %s", JSON.stringify(workout));
     }
+});
+
+cmds.register("workout choose", async function([id]) {
+    if (typeof id !== "string") {
+        console.error("cannot choose workout without workout id");
+        console.log("usage: workout choose <id>");
+        return;
+    }
+
+    const workout = data.workouts.find(w => w.id === id);
+    if (workout) {
+        data.workout = workout;
+        await save();
+        console.log("workout %s chosen", id);
+    } else {
+        console.log("workout id not found: %s", id);
+    }
+});
+
+cmds.register("workout unchoose", async function() {
+    if (!data.workout) {
+        console.log("no workout selected");
+        return;
+    }
+    const workout = data.workout;
+    data.workout = null;
+    await save();
+    console.log("workout '%s' unselected", workout.id);
 });
 
 cmds.register("workout create", async function([name]) {
@@ -78,27 +112,27 @@ cmds.register("workout read", async function([name]) {
     console.log("%s", JSON.stringify(workout, null, 4));
 });
 
-cmds.register("workout rename", async function([oldName, newName]) {
-    if (typeof oldName !== "string" || oldName === "") {
-        console.error("error: old name required");
-        console.log("usage: workout rename <old-name> <new-name>");
+cmds.register("workout rename", async function([id, newName]) {
+    if (typeof id !== "string" || id === "") {
+        console.error("error: id required");
+        console.log("usage: workout rename <id> <new-name>");
         return;
     }
     if (typeof newName !== "string" || newName === "") {
         console.error("error: new name required");
-        console.log("usage: workout rename <old-name> <new-name>");
+        console.log("usage: workout rename <id> <new-name>");
         return;
     }
     
-    const workout = data.workouts.find(w => w.name === oldName);
+    const workout = data.workouts.find(w => w.id === id);
     if (!workout) {
-        console.error("error: workout '%s' does not exist", oldName);
+        console.error("error: workout '%s' does not exist", id);
         return;
     }
     
+    console.log("workout '%s' renamed to '%s'", workout.name, newName);
     workout.name = newName;
     await save();
-    console.log("workout '%s' renamed to '%s'", oldName, newName);
 });
 
 cmds.register("plan add workout", async function([workoutId]) {
@@ -125,6 +159,46 @@ cmds.register("plan add workout", async function([workoutId]) {
     await save();
     console.log(
         "workout '%s' added to plan '%s'",
+        workout.name,
+        data.plan.name
+    );
+});
+
+cmds.register("plan workout remove", async function([workoutId]) {
+    if (!workoutId) {
+        console.error("plan workout remove: missing workout id");
+        console.log("usage:\n\tplan workout remove <workout-id>");
+        return;
+    }
+
+    if (!data.plan) {
+        console.error("no selected plan - choose one with `plan choose <id>`");
+        return;
+    }
+
+    const workout = data.workouts.find(w => w.id === workoutId);
+    if (!workout) {
+        console.error("no workout found by id '%s'", workoutId);
+        return;
+    }
+
+    if (workout.plan !== data.plan.id) {
+        console.error("workout '%s' is not in plan '%s'", workout.name, data.plan.name);
+        return;
+    }
+
+    workout.plan = null;
+    workout.order = 0;
+
+    const planWorkouts = data.workouts.filter(w => w.plan === data.plan.id);
+    planWorkouts.sort((a, b) => a.order - b.order);
+    for (let i = 0; i < planWorkouts.length; i++) {
+        planWorkouts[i].order = i;
+    }
+
+    await save();
+    console.log(
+        "workout '%s' removed from plan '%s'",
         workout.name,
         data.plan.name
     );
