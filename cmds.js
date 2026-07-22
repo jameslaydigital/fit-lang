@@ -4,6 +4,17 @@ class Commands {
         this.routes = {};
     }
 
+    getRoutes(prefix) {
+        const keys = Object.keys(this.routes);
+        if (typeof prefix === "string") {
+            return keys.filter(k => k.startsWith(prefix));
+        }
+        if (prefix instanceof RegExp) {
+            return keys.filter(k => prefix.test(k));
+        }
+        return keys;
+    }
+
     register(cmd, handler) {
         if (typeof this.routes[cmd] === "function") {
             throw new Error(`command ${cmd} already registered!`);

@@ -1,8 +1,7 @@
-import { data, drafts } from "../../storage.js";
+import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
 
 data.plans = data.plans ?? [];
-drafts.plan = drafts.plans ?? [];
 
 class Plan {
     constructor(name) {
@@ -14,6 +13,18 @@ class Plan {
         }
         this.name = name;
     }
+    static fromObject(obj) {
+        if (typeof obj !== "object" || obj === null) {
+            throw new Error(
+                "Plan::fromObject expects something other than " +
+                JSON.stringify(obj)
+            );
+        }
+        if (typeof obj.name !== "string") {
+            throw new Error("cannot construct plan because it's missing a name!");
+        }
+        return new Plan(obj.name);
+    }
 }
 
 // plan CRUD
@@ -23,33 +34,50 @@ cmds.register("plan", async function() {
     console.log("options:");
     console.log("\tplan list");
     console.log("\tplan rename");
-    console.log("\tplan draft list");
-    console.log("\tplan draft create");
-    console.log("\tplan draft pop");
-    console.log("\tplan draft commit");
+});
+
+cmds.register("stack push plan", async function([plan_name]) {
+    if (typeof plan_name !== "string") {
+        console.error("cannot push plan without plan name");
+        console.log("usage: stack push plan <plan_name>");
+        return;
+    }
+
+    const plan = data.plans.find(p => p.name === plan_name);
+    if (plan) {
+        stack.push(plan);
+        await save();
+    }
+});
+
+cmds.register("plan unchoose", async function() {
+    if (plan === null) {
+        console.log("no selected plan, no action taken");
+        console.log("usage: plan unchoose");
+        return;
+    }
+    console.log("plan '%s' no longer chosen", plan.name);
+    plan = null;
 });
 
 cmds.register("plan list", async function() {
     console.log(data.plans);
 });
-cmds.register("plan draft list", async function(name) {
-    console.log(drafts.plans);
-});
 
-cmds.register("plan draft create", async function([name]) {
-    drafts.plans.push(new Plan(name));
+cmds.register("plan create", async function([name]) {
+    if (typeof name !== "string") {
+        console.error("could not create new plan - no name specified");
+        console.log("usage: plan create <plan_name>");
+        return;
+    }
+    if (name === "") {
+        console.error("plan name is empty");
+        console.log("usage: plan create <plan_name>");
+        return;
+    }
+    data.plans.push(new Plan(name));
     save();
-    console.log(drafts.plans);
-});
-cmds.register("plan draft pop", async function() {
-    console.log(drafts.plans.pop());
-    save();
-});
-cmds.register("plan draft commit", async function() {
-    const draft = drafts.plans.pop();
-    data.plans.push(draft);
-    await save();
-    console.log("plan '%s' committed to database", draft.name);
+    console.log("created new plan '%s'", name);
 });
 cmds.register("plan rename", async function([oldname, newname]) {
     if (!oldname || !newname) {
@@ -68,3 +96,4 @@ cmds.register("plan rename", async function([oldname, newname]) {
     await save();
     console.log("plan '%s' renamed to '%s'", oldname, newname);
 });
+
