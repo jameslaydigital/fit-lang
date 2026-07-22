@@ -1,14 +1,18 @@
 {
     "workouts": [
         {
+            "id": "abc",
+            "order": 1,
             "type": "workout",
             "name": "curls",
-            "plan": null
+            "plan": "dsfeqvx14cv"
         },
         {
+            "id": "def",
+            "order": 0,
             "type": "workout",
             "name": "deadlifts",
-            "plan": null
+            "plan": "dsfeqvx14cv"
         }
     ],
     "plans": [

@@ -8,16 +8,21 @@ class Commands {
         const routes = this.getRoutes(prefix);
         routes.sort();
         for (const route of routes) {
-            const signature = cmds.routes[route].toString().split(/\n/g).shift().match(/\[.*?\]/);
-            if (signature && signature.length) {
-                const opts = signature[0]
-                    .replace(/\[/g, "<")
-                    .replace(/]/g, ">")
-                    .replace(/, /g, "> <");
-                console.log("  > %s %s", route, opts);
-            } else {
-                console.log("  > %s", route);
-            }
+            this.usage(route);
+        }
+    }
+
+    usage(route) {
+        const handler = this.routes[route];
+        const signature = handler.toString().split(/\n/g).shift().match(/\[.*?\]/);
+        if (signature && signature.length) {
+            const opts = signature[0]
+                .replace(/\[/g, "<")
+                .replace(/]/g, ">")
+                .replace(/, /g, "> <");
+            console.log("  > %s %s", route, opts);
+        } else {
+            console.log("  > %s", route);
         }
     }
 
