@@ -1,10 +1,18 @@
 {
-    "plans": [
+    "workouts": [
         {
-            "name": "newer plan"
+            "type": "workout",
+            "name": "curls",
+            "plan": null
+        },
+        {
+            "type": "workout",
+            "name": "deadlifts",
+            "plan": null
         }
     ],
-    "workouts": [],
+    "plans": [
+    ],
     "exercises": [],
     "sets": []
 }
