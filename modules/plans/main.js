@@ -2,40 +2,47 @@ import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
 
 data.plans = data.plans ?? [];
+data.plan = data.plan ?? null;
 
 // plan CRUD
 cmds.register("plan", async function() {
-    const routes = cmds.getRoutes("plan ");
     console.log("plan - workout plans");
+    if (data.plan === null) {
+        console.log("no plan selected.");
+    } else {
+        console.log("selected plan: (%s) '%s'", data.plan.id, data.plan.name);
+    }
     console.log("--------------------");
     console.log("options:");
-    for (const route of routes) {
-        console.log("\t%s", route);
-    }
+    cmds.displayRoutes("plan ");
 });
 
-cmds.register("stack push plan", async function([id]) {
+cmds.register("plan choose", async function([id]) {
     if (typeof id !== "string") {
-        console.error("cannot push plan without plan id");
-        console.log("usage: stack push plan <id>");
+        console.error("cannot choose plan without plan id");
+        console.log("usage: plan choose <id>");
         return;
     }
 
     const plan = data.plans.find(p => p.id === id);
     if (plan) {
-        stack.push(plan);
+        data.plan = plan;
         await save();
+        console.log("plan %s chosen", id);
+    } else {
+        console.log("plan id not found: ", id);
     }
 });
 
 cmds.register("plan unchoose", async function() {
-    if (plan === null) {
-        console.log("no selected plan, no action taken");
-        console.log("usage: plan unchoose");
+    if (!data.plan) {
+        console.log("no plan selected");
         return;
     }
-    console.log("plan '%s' no longer chosen", plan.name);
-    plan = null;
+    const plan = data.plan;
+    data.plan = null;
+    await save();
+    console.log("plan '%s' unselected", plan.id);
 });
 
 cmds.register("plan list", async function() {
@@ -45,9 +52,16 @@ cmds.register("plan list", async function() {
         return;
     }
     for (const plan of data.plans) {
-        console.log("\t- %s", JSON.stringify(plan));
+        console.log("\t- %s: %s", plan.id, plan.name);
     }
 });
+
+cmds.register("plan list ids", async function() {
+    for (const plan of data.plans) {
+        console.log(plan.id);
+    }
+});
+
 
 cmds.register("plan create", async function([name]) {
     if (typeof name !== "string") {
@@ -60,13 +74,16 @@ cmds.register("plan create", async function([name]) {
         console.log("usage: plan create <plan_name>");
         return;
     }
-    data.plans.push({
+    const plan = {
         type: "plan",
-        id: Math.random(36).toString().split(".").pop(),
+        id: Math.random().toString(36).split(".").pop(),
         name: name,
-    });
+    };
+    data.plans.push(plan);
+    data.plan = plan;
     save();
     console.log("created new plan '%s'", name);
+    console.log("plan %s selected", plan.id);
 });
 
 cmds.register("plan rename", async function([id, newname]) {
@@ -90,5 +107,23 @@ cmds.register("plan rename", async function([id, newname]) {
     plan.name = newname;
     await save();
     console.log("plan '%s' renamed to '%s'", oldname, newname);
+});
+
+cmds.register("plan remove", async function([id]) {
+    if (!id) {
+        console.log("fit plan remove: missing id");
+        console.log("usage:\n\tfit plan remove <id>");
+        return;
+    }
+
+    const length = data.plans.length;
+    data.plans = data.plans.filter(p => p.id !== id);
+    const diff = length - data.plans.length;
+    await save();
+    if (diff === 0) {
+        console.log("no plans removed");
+    } else {
+        console.log("%d plan(s) removed", diff);
+    }
 });
 

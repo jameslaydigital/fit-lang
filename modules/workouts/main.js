@@ -97,6 +97,12 @@ cmds.register("workout rename", async function([oldName, newName]) {
     console.log("workout '%s' renamed to '%s'", oldName, newName);
 });
 
-cmds.register("plan add workout", async function([name]) {
-    // okay this one takes some thinking...
+cmds.register("plan add workout", async function([workoutId]) {
+    if (!workoutId) {
+        console.error("plan add workout: missing workout id");
+        console.log("usage:\n\tplan add workout <workout-id>");
+        return;
+    }
+
+    // at this point, the plan should exist somewhere, right?
 });

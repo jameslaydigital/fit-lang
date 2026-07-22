@@ -12,7 +12,22 @@
         }
     ],
     "plans": [
+        {
+            "type": "plan",
+            "id": "vgll9up735c",
+            "name": "test plan"
+        },
+        {
+            "type": "plan",
+            "id": "dsfeqvx14cv",
+            "name": "5x5"
+        }
     ],
+    "plan": {
+        "type": "plan",
+        "id": "dsfeqvx14cv",
+        "name": "5x5"
+    },
     "exercises": [],
     "sets": []
 }

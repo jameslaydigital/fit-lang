@@ -4,6 +4,22 @@ class Commands {
         this.routes = {};
     }
 
+    displayRoutes(prefix) {
+        const routes = this.getRoutes(prefix);
+        for (const route of routes) {
+            const signature = cmds.routes[route].toString().split(/\n/g).shift().match(/\[.*?\]/);
+            if (signature && signature.length) {
+                const opts = signature[0]
+                    .replace(/\[/g, "<")
+                    .replace(/]/g, ">")
+                    .replace(/, /g, "> <");
+                console.log("\t%s %s", route, opts);
+            } else {
+                console.log("\t%s", route);
+            }
+        }
+    }
+
     getRoutes(prefix) {
         const keys = Object.keys(this.routes);
         if (typeof prefix === "string") {
@@ -34,7 +50,9 @@ class Commands {
                 return;
             }
         }
-        throw new Error(`invalid command - no handler for '${JSON.stringify(tokens)}'`);
+        if (tokens.length === 0) {
+            cmds.displayRoutes();
+        }
     }
 
 }
