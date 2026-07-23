@@ -1,15 +1,17 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
+import { currentWorkout, currentPlan } from "../../helpers.js";
 
 data.workouts = data.workouts ?? {};
-data.workout = data.workout ?? null;
+data.workoutId = data.workoutId ?? null;
 
 cmds.register("workout", function() {
+    const workout = currentWorkout();
     console.log("workout - a series of exercises");
-    if (data.workout === null) {
+    if (workout === null) {
         console.log("no workout selected.");
     } else {
-        console.log("selected workout: (%s) '%s'", data.workout.id, data.workout.name);
+        console.log("selected workout: (%s) '%s'", workout.id, workout.name);
     }
     console.log("-------------------------------");
     console.log("options:");
@@ -42,7 +44,7 @@ cmds.register("workout choose", async function([id]) {
 
     const workout = data.workouts.find(w => w.id === id);
     if (workout) {
-        data.workout = workout;
+        data.workoutId = workout.id;
         await save();
         console.log("workout %s chosen", id);
     } else {
@@ -51,12 +53,12 @@ cmds.register("workout choose", async function([id]) {
 });
 
 cmds.register("workout unchoose", async function() {
-    if (!data.workout) {
+    if (!data.workoutId) {
         console.log("no workout selected");
         return;
     }
-    const workout = data.workout;
-    data.workout = null;
+    const workout = currentWorkout();
+    data.workoutId = null;
     await save();
     console.log("workout '%s' unselected", workout.id);
 });
@@ -70,7 +72,7 @@ cmds.register("workout create", async function([name]) {
 
     data.workouts.push({
         type: "workout",
-        id: Math.random(36).toString().split(".").pop(),
+        id: Math.random().toString(36).split(".").pop(),
         order: 0,
         name: name,
         plan: null,
@@ -142,7 +144,8 @@ cmds.register("plan add workout", async function([workoutId]) {
         return;
     }
 
-    if (typeof data.plan === "undefined" || data.plan === null) {
+    const plan = currentPlan();
+    if (!plan) {
         console.error("no selected plan - choose one with `plan choose <id>`");
         return;
     }
@@ -153,14 +156,14 @@ cmds.register("plan add workout", async function([workoutId]) {
         return;
     }
 
-    const planWorkouts = data.workouts.filter(w => w.plan === data.plan.id);
+    const planWorkouts = data.workouts.filter(w => w.plan === plan.id);
     workout.order = planWorkouts.length;
-    workout.plan = data.plan.id;
+    workout.plan = plan.id;
     await save();
     console.log(
         "workout '%s' added to plan '%s'",
         workout.name,
-        data.plan.name
+        plan.name
     );
 });
 
@@ -171,7 +174,8 @@ cmds.register("plan workout remove", async function([workoutId]) {
         return;
     }
 
-    if (!data.plan) {
+    const plan = currentPlan();
+    if (!plan) {
         console.error("no selected plan - choose one with `plan choose <id>`");
         return;
     }
@@ -182,15 +186,15 @@ cmds.register("plan workout remove", async function([workoutId]) {
         return;
     }
 
-    if (workout.plan !== data.plan.id) {
-        console.error("workout '%s' is not in plan '%s'", workout.name, data.plan.name);
+    if (workout.plan !== plan.id) {
+        console.error("workout '%s' is not in plan '%s'", workout.name, plan.name);
         return;
     }
 
     workout.plan = null;
     workout.order = 0;
 
-    const planWorkouts = data.workouts.filter(w => w.plan === data.plan.id);
+    const planWorkouts = data.workouts.filter(w => w.plan === plan.id);
     planWorkouts.sort((a, b) => a.order - b.order);
     for (let i = 0; i < planWorkouts.length; i++) {
         planWorkouts[i].order = i;
@@ -200,7 +204,7 @@ cmds.register("plan workout remove", async function([workoutId]) {
     console.log(
         "workout '%s' removed from plan '%s'",
         workout.name,
-        data.plan.name
+        plan.name
     );
 });
 
@@ -224,12 +228,13 @@ cmds.register("plan workout reorder", async function([workoutId, newPosition]) {
         return;
     }
 
-    if (!data.plan) {
+    const plan = currentPlan();
+    if (!plan) {
         console.error("plan workout reorder: no selected plan");
         return;
     }
 
-    const planWorkouts = data.workouts.filter(w => w.plan === data.plan.id);
+    const planWorkouts = data.workouts.filter(w => w.plan === plan.id);
     const oldOrder = target.order;
 
     if (pos > oldOrder) {
@@ -264,15 +269,16 @@ cmds.register("plan workout", async function() {
 });
 
 cmds.register("plan workout list", async function() {
-    if (data.plan === null) {
+    const plan = currentPlan();
+    if (!plan) {
         console.error("no selected plan - choose one with `plan choose <id>`");
         return;
     }
 
-    console.log("workouts in plan '%s'", data.plan.name);
+    console.log("workouts in plan '%s'", plan.name);
     console.log("---------------------");
     console.log("");
-    const planWorkouts = data.workouts.filter(w => w.plan === data.plan.id);
+    const planWorkouts = data.workouts.filter(w => w.plan === plan.id);
     planWorkouts.sort((a, b) => a.order - b.order);
     for (const workout of planWorkouts) {
         console.log("  %d) %s: %s", workout.order, workout.id, workout.name);

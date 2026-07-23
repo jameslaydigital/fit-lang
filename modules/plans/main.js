@@ -1,16 +1,18 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
+import { currentPlan } from "../../helpers.js";
 
 data.plans = data.plans ?? [];
-data.plan = data.plan ?? null;
+data.planId = data.planId ?? null;
 
 // plan CRUD
 cmds.register("plan", async function() {
+    const plan = currentPlan();
     console.log("plan - workout plans");
-    if (data.plan === null) {
+    if (plan === null) {
         console.log("no plan selected.");
     } else {
-        console.log("selected plan: (%s) '%s'", data.plan.id, data.plan.name);
+        console.log("selected plan: (%s) '%s'", plan.id, plan.name);
     }
     console.log("--------------------");
     console.log("options:");
@@ -26,7 +28,7 @@ cmds.register("plan choose", async function([id]) {
 
     const plan = data.plans.find(p => p.id === id);
     if (plan) {
-        data.plan = plan;
+        data.planId = plan.id;
         await save();
         console.log("plan %s chosen", id);
     } else {
@@ -35,12 +37,12 @@ cmds.register("plan choose", async function([id]) {
 });
 
 cmds.register("plan unchoose", async function() {
-    if (!data.plan) {
+    if (!data.planId) {
         console.log("no plan selected");
         return;
     }
-    const plan = data.plan;
-    data.plan = null;
+    const plan = currentPlan();
+    data.planId = null;
     await save();
     console.log("plan '%s' unselected", plan.id);
 });
@@ -80,7 +82,7 @@ cmds.register("plan create", async function([name]) {
         name: name,
     };
     data.plans.push(plan);
-    data.plan = plan;
+    data.planId = plan.id;
     save();
     console.log("created new plan '%s'", name);
     console.log("plan %s selected", plan.id);

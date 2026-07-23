@@ -1,15 +1,17 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
+import { currentExercise, currentWorkout } from "../../helpers.js";
 
 data.exercises = data.exercises ?? [];
-data.exercise = data.exercise ?? null;
+data.exerciseId = data.exerciseId ?? null;
 
 cmds.register("exercise", async function() {
+    const exercise = currentExercise();
     console.log("exercise - a single exercise");
-    if (data.exercise === null) {
+    if (exercise === null) {
         console.log("no exercise selected.");
     } else {
-        console.log("selected exercise: (%s) '%s'", data.exercise.id, data.exercise.name);
+        console.log("selected exercise: (%s) '%s'", exercise.id, exercise.name);
     }
     console.log("-------------------------------");
     console.log("options:");
@@ -25,7 +27,7 @@ cmds.register("exercise choose", async function([id]) {
 
     const exercise = data.exercises.find(e => e.id === id);
     if (exercise) {
-        data.exercise = exercise;
+        data.exerciseId = exercise.id;
         await save();
         console.log("exercise %s chosen", id);
     } else {
@@ -34,12 +36,12 @@ cmds.register("exercise choose", async function([id]) {
 });
 
 cmds.register("exercise unchoose", async function() {
-    if (!data.exercise) {
+    if (!data.exerciseId) {
         console.log("no exercise selected");
         return;
     }
-    const exercise = data.exercise;
-    data.exercise = null;
+    const exercise = currentExercise();
+    data.exerciseId = null;
     await save();
     console.log("exercise '%s' unselected", exercise.id);
 });
@@ -110,7 +112,8 @@ cmds.register("workout exercise add", async function([exerciseId]) {
         return;
     }
 
-    if (!data.workout) {
+    const workout = currentWorkout();
+    if (!workout) {
         console.error("no selected workout - choose one with `workout choose <id>`");
         return;
     }
@@ -121,14 +124,14 @@ cmds.register("workout exercise add", async function([exerciseId]) {
         return;
     }
 
-    const workoutExercises = data.exercises.filter(e => e.workout === data.workout.id);
+    const workoutExercises = data.exercises.filter(e => e.workout === workout.id);
     exercise.order = workoutExercises.length;
-    exercise.workout = data.workout.id;
+    exercise.workout = workout.id;
     await save();
     console.log(
         "exercise '%s' added to workout '%s'",
         exercise.name,
-        data.workout.name
+        workout.name
     );
 });
 
@@ -139,7 +142,8 @@ cmds.register("workout exercise remove", async function([exerciseId]) {
         return;
     }
 
-    if (!data.workout) {
+    const workout = currentWorkout();
+    if (!workout) {
         console.error("no selected workout - choose one with `workout choose <id>`");
         return;
     }
@@ -150,15 +154,15 @@ cmds.register("workout exercise remove", async function([exerciseId]) {
         return;
     }
 
-    if (exercise.workout !== data.workout.id) {
-        console.error("exercise '%s' is not in workout '%s'", exercise.name, data.workout.name);
+    if (exercise.workout !== workout.id) {
+        console.error("exercise '%s' is not in workout '%s'", exercise.name, workout.name);
         return;
     }
 
     exercise.workout = null;
     exercise.order = 0;
 
-    const workoutExercises = data.exercises.filter(e => e.workout === data.workout.id);
+    const workoutExercises = data.exercises.filter(e => e.workout === workout.id);
     workoutExercises.sort((a, b) => a.order - b.order);
     for (let i = 0; i < workoutExercises.length; i++) {
         workoutExercises[i].order = i;
@@ -168,7 +172,7 @@ cmds.register("workout exercise remove", async function([exerciseId]) {
     console.log(
         "exercise '%s' removed from workout '%s'",
         exercise.name,
-        data.workout.name
+        workout.name
     );
 });
 
@@ -192,12 +196,13 @@ cmds.register("workout exercise reorder", async function([exerciseId, newPositio
         return;
     }
 
-    if (!data.workout) {
+    const workout = currentWorkout();
+    if (!workout) {
         console.error("workout exercise reorder: no selected workout");
         return;
     }
 
-    const workoutExercises = data.exercises.filter(e => e.workout === data.workout.id);
+    const workoutExercises = data.exercises.filter(e => e.workout === workout.id);
     const oldOrder = target.order;
 
     if (pos > oldOrder) {
@@ -224,4 +229,3 @@ cmds.register("workout exercise reorder", async function([exerciseId, newPositio
     await save();
     console.log("reordered.");
 });
-

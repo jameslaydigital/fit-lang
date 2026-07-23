@@ -15,6 +15,21 @@
             "plan": "dsfeqvx14cv"
         }
     ],
+    "workout": null,
+    "sets": [
+        {
+            "id": "ydqjmotqlco",
+            "reps": 0,
+            "unitOfMeasure": "kg",
+            "amount": 0
+        }
+    ],
+    "set": {
+        "id": "ydqjmotqlco",
+        "reps": 5,
+        "unitOfMeasure": "lbs",
+        "amount": 10
+    },
     "plans": [
         {
             "type": "plan",
@@ -33,5 +48,5 @@
         "name": "5x5"
     },
     "exercises": [],
-    "sets": []
+    "exercise": null
 }
