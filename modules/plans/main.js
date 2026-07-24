@@ -1,6 +1,6 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
-import { currentPlan } from "../../helpers.js";
+import { check, currentPlan } from "../../helpers.js";
 
 data.plans = data.plans ?? [];
 data.planId = data.planId ?? null;
@@ -20,12 +20,8 @@ cmds.register("plan", async function() {
 });
 
 cmds.register("plan choose", async function([id]) {
-    if (typeof id !== "string") {
-        console.error("cannot choose plan without plan id");
-        console.log("usage: plan choose <id>");
-        return;
-    }
 
+    check(() => id);
     const plan = data.plans.find(p => p.id === id);
     if (plan) {
         data.planId = plan.id;
@@ -66,16 +62,7 @@ cmds.register("plan list ids", async function() {
 
 
 cmds.register("plan create", async function([name]) {
-    if (typeof name !== "string") {
-        console.error("could not create new plan - no name specified");
-        console.log("usage: plan create <plan_name>");
-        return;
-    }
-    if (name === "") {
-        console.error("plan name is empty");
-        console.log("usage: plan create <plan_name>");
-        return;
-    }
+    check(() => name);
     const plan = {
         type: "plan",
         id: Math.random().toString(36).split(".").pop(),
@@ -89,18 +76,8 @@ cmds.register("plan create", async function([name]) {
 });
 
 cmds.register("plan rename", async function([id, newname]) {
-    const usage = "usage:\n\tfit plan rename <id> <newname>";
-    if (!id) {
-        console.log("fit plan rename: missing id");
-        console.log(usage);
-        return;
-    }
-    if (!newname) {
-        console.log("fit plan rename: missing a name");
-        console.log(usage);
-        return;
-    }
-
+    check(() => id);
+    check(() => newname);
     const plan = data.plans.find(p => p.id === id);
     if (!plan) {
         console.log("no plan found by name '%s'", oldname);
@@ -112,12 +89,7 @@ cmds.register("plan rename", async function([id, newname]) {
 });
 
 cmds.register("plan remove", async function([id]) {
-    if (!id) {
-        console.log("fit plan remove: missing id");
-        console.log("usage:\n\tfit plan remove <id>");
-        return;
-    }
-
+    check(() => id);
     const length = data.plans.length;
     data.plans = data.plans.filter(p => p.id !== id);
     const diff = length - data.plans.length;

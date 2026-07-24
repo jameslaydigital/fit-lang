@@ -1,6 +1,6 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
-import { currentSet, currentExercise } from "../../helpers.js";
+import { check, checkFloat, currentSet, currentExercise } from "../../helpers.js";
 
 data.sets = data.sets ?? {};
 data.setId = data.setId ?? null;
@@ -51,12 +51,7 @@ cmds.register("set create", async function() {
 });
 
 cmds.register("set choose", async function([id]) {
-    if (typeof id !== "string") {
-        console.error("cannot choose set without set id");
-        console.log("usage: set choose <id>");
-        return;
-    }
-
+    check(() => id);
     const set = data.sets.find(s => s.id === id);
     if (set) {
         data.setId = set.id;
@@ -79,6 +74,8 @@ cmds.register("set unchoose", async function() {
 });
 
 cmds.register("set reps", async function([reps]) {
+    checkFloat(() => reps);
+
     const set = currentSet();
     if (!set) {
         console.error("no set selected");
@@ -100,11 +97,7 @@ cmds.register("set amount", async function([amount, unitOfMeasure]) {
         console.error("no set selected");
         return;
     }
-    const amountNum = parseFloat(amount);
-    if (isNaN(amountNum) || amountNum < 0) {
-        console.error("invalid amount value");
-        return;
-    }
+    const amountNum = checkFloat(() => amount);
     set.amount = amountNum;
     if (unitOfMeasure) {
         set.unitOfMeasure = unitOfMeasure;
@@ -114,11 +107,7 @@ cmds.register("set amount", async function([amount, unitOfMeasure]) {
 });
 
 cmds.register("exercise add set", async function([setId]) {
-    if (!setId) {
-        console.error("exercise add set: missing set id");
-        console.log("usage:\n\texercise add set <set-id>");
-        return;
-    }
+    check(() => setId);
 
     const exercise = currentExercise();
     if (!exercise) {
@@ -142,11 +131,7 @@ cmds.register("exercise add set", async function([setId]) {
 });
 
 cmds.register("set remove", async function([id]) {
-    if (!id) {
-        console.error("set remove: missing id");
-        console.log("usage:\n\tset remove <set-id>");
-        return;
-    }
+    check(() => id);
     const length = data.sets.length;
     data.sets = data.sets.filter(s => s.id !== id);
     const diff = length - data.sets.length;

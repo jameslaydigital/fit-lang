@@ -2,6 +2,7 @@ class Commands {
 
     constructor() {
         this.routes = {};
+        this.lastRoute = "";
     }
 
     displayRoutes(prefix) {
@@ -10,6 +11,10 @@ class Commands {
         for (const route of routes) {
             this.usage(route);
         }
+    }
+
+    showCurrentUsage() {
+        return this.usage(this.lastRoute);
     }
 
     usage(route) {
@@ -51,6 +56,7 @@ class Commands {
         for (let i = tokens.length; i > 0; i--) {
             const normalized_subcmd = tokens.slice(0, i).join(" ");
             if (typeof this.routes[normalized_subcmd] === "function") {
+                this.lastRoute = normalized_subcmd;
                 const handler = this.routes[normalized_subcmd];
                 handler(tokens.slice(i));
                 return;

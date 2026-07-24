@@ -1,6 +1,6 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
-import { currentWorkout, currentPlan } from "../../helpers.js";
+import { check, checkFloat, checkIndex, currentWorkout, currentPlan } from "../../helpers.js";
 
 data.workouts = data.workouts ?? {};
 data.workoutId = data.workoutId ?? null;
@@ -36,12 +36,7 @@ cmds.register("workout list", async function() {
 });
 
 cmds.register("workout choose", async function([id]) {
-    if (typeof id !== "string") {
-        console.error("cannot choose workout without workout id");
-        console.log("usage: workout choose <id>");
-        return;
-    }
-
+    check(() => id);
     const workout = data.workouts.find(w => w.id === id);
     if (workout) {
         data.workoutId = workout.id;
@@ -64,11 +59,7 @@ cmds.register("workout unchoose", async function() {
 });
 
 cmds.register("workout create", async function([name]) {
-    if (typeof name !== "string" || name === "") {
-        console.error("error: name required");
-        console.log("usage: workout create <name>");
-        return;
-    }
+    check(() => name);
 
     data.workouts.push({
         type: "workout",
@@ -83,11 +74,7 @@ cmds.register("workout create", async function([name]) {
 });
 
 cmds.register("workout remove", async function([name]) {
-    if (typeof name !== "string" || name === "") {
-        console.error("error: name required");
-        console.log("usage: workout remove <name>");
-        return;
-    }
+    check(() => name);
     const length = data.workouts.length;
     data.workouts = data.workouts.filter(w => w.name !== name);
     await save();
@@ -100,12 +87,7 @@ cmds.register("workout remove", async function([name]) {
 });
 
 cmds.register("workout read", async function([name]) {
-    if (typeof name !== "string" || name === "") {
-        console.error("error: name required");
-        console.log("usage: workout read <name>");
-        return;
-    }
-
+    check(() => name);
     const workout = data.workouts.find(w => w.name === name);
     if (!workout) {
         console.log("no workout found by name '%s'", name);
@@ -115,17 +97,8 @@ cmds.register("workout read", async function([name]) {
 });
 
 cmds.register("workout rename", async function([id, newName]) {
-    if (typeof id !== "string" || id === "") {
-        console.error("error: id required");
-        console.log("usage: workout rename <id> <new-name>");
-        return;
-    }
-    if (typeof newName !== "string" || newName === "") {
-        console.error("error: new name required");
-        console.log("usage: workout rename <id> <new-name>");
-        return;
-    }
-    
+    check(() => id);
+    check(() => newName);
     const workout = data.workouts.find(w => w.id === id);
     if (!workout) {
         console.error("error: workout '%s' does not exist", id);
@@ -138,11 +111,7 @@ cmds.register("workout rename", async function([id, newName]) {
 });
 
 cmds.register("plan add workout", async function([workoutId]) {
-    if (!workoutId) {
-        console.error("plan add workout: missing workout id");
-        console.log("usage:\n\tplan add workout <workout-id>");
-        return;
-    }
+    check(() => workoutId);
 
     const plan = currentPlan();
     if (!plan) {
@@ -168,11 +137,7 @@ cmds.register("plan add workout", async function([workoutId]) {
 });
 
 cmds.register("plan workout remove", async function([workoutId]) {
-    if (!workoutId) {
-        console.error("plan workout remove: missing workout id");
-        console.log("usage:\n\tplan workout remove <workout-id>");
-        return;
-    }
+    check(() => workoutId);
 
     const plan = currentPlan();
     if (!plan) {
@@ -209,19 +174,8 @@ cmds.register("plan workout remove", async function([workoutId]) {
 });
 
 cmds.register("plan workout reorder", async function([workoutId, newPosition]) {
-    if (!workoutId) {
-        console.error("plan workout reorder: no workout id specified");
-        cmds.usage("plan workout reorder");
-        return;
-    }
-
-    const pos = parseInt(newPosition, 10);
-    if (isNaN(pos) || pos < 0) {
-        console.error("plan workout reorder: invalid position");
-        cmds.usage("plan workout reorder");
-        return;
-    }
-
+    check(() => workoutId);
+    const pos = checkIndex(() => newPosition);
     const target = data.workouts.find(w => w.id === workoutId);
     if (!target) {
         console.error("plan workout reorder: no workout found by id '%s'", workoutId);
