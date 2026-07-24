@@ -80,9 +80,10 @@ cmds.register("plan rename", async function([id, newname]) {
     check(() => newname);
     const plan = data.plans.find(p => p.id === id);
     if (!plan) {
-        console.log("no plan found by name '%s'", oldname);
+        console.log("no plan found by id '%s'", id);
         return;
     }
+    const oldname = plan.name;
     plan.name = newname;
     await save();
     console.log("plan '%s' renamed to '%s'", oldname, newname);

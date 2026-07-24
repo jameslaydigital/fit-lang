@@ -22,7 +22,7 @@ cmds.register("exercise choose", async function([id]) {
     check(() => id);
 
     const exercise = data.exercises.find(e => e.id === id);
-    check(() => exercise);
+    check(() => exercise, `no exercise found for ${id}`);
 
     data.exerciseId = exercise.id;
     await save();
@@ -30,10 +30,7 @@ cmds.register("exercise choose", async function([id]) {
 });
 
 cmds.register("exercise unchoose", async function() {
-    if (!data.exerciseId) {
-        console.log("no exercise selected");
-        return;
-    }
+    check(() => data.exerciseId, "no exercise selected");
     const exercise = currentExercise();
     data.exerciseId = null;
     await save();
