@@ -1,10 +1,13 @@
 import { glob } from "fs/promises";
-import { save, load } from "./storage.js";
+import { save, load, setAdapter } from "./storage.js";
 import { cmds } from "./cmds.js";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { nodeAdapter } from "./adapters/node.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+setAdapter(nodeAdapter);
 
 for await (const fname of glob(__dirname + "/modules/*/main.js")) {
     await import(fname);

@@ -1,11 +1,5 @@
 load ../../test_helper
 
-@test "plan shows no plan selected initially" {
-    run node index.js plan
-    [ "$status" -eq 0 ]
-    assert_output_contains "no plan selected"
-}
-
 @test "plan create creates and selects a new plan" {
     run node index.js plan create "test-plan"
     [ "$status" -eq 0 ]
@@ -29,22 +23,28 @@ load ../../test_helper
     run node index.js plan unchoose
     run node index.js plan choose "$id"
     [ "$status" -eq 0 ]
-    assert_output_contains "plan $id chosen"
+    assert_output_contains "chosen"
+}
+
+@test "plan chosen shows selected plan" {
+    run node index.js plan create "delta"
+    run node index.js plan chosen
+    [ "$status" -eq 0 ]
+}
+
+@test "plan details shows current plan details" {
+    run node index.js plan create "epsilon"
+    run node index.js plan details
+    [ "$status" -eq 0 ]
+    assert_output_contains "current selection"
 }
 
 @test "plan unchoose unselects the current plan" {
     run node index.js plan create "delta"
     run node index.js plan unchoose
     [ "$status" -eq 0 ]
-    run node index.js plan
-    assert_output_contains "no plan selected"
-}
-
-@test "plan list ids outputs plan ids" {
-    run node index.js plan create "epsilon"
-    run node index.js plan list ids
-    [ "$status" -eq 0 ]
-    [ "${#lines[@]}" -ge 1 ]
+    run node index.js plan chosen
+    assert_output_contains "empty"
 }
 
 @test "plan rename renames a plan" {

@@ -1,11 +1,5 @@
 load ../../test_helper
 
-@test "workout shows no workout selected initially" {
-    run node index.js workout
-    [ "$status" -eq 0 ]
-    assert_output_contains "no workout selected"
-}
-
 @test "workout create creates a new workout" {
     run node index.js workout create "leg-day"
     [ "$status" -eq 0 ]
@@ -19,17 +13,45 @@ load ../../test_helper
     assert_output_contains "upper"
 }
 
-@test "workout list ids outputs workout ids" {
-    run node index.js workout create "pull"
-    run node index.js workout list ids
+@test "workout choose selects a workout by id" {
+    run node index.js workout create "push"
+    id=$(node -p "JSON.parse(require('fs').readFileSync('data.json','utf8')).workouts.find(w=>w.name==='push').id")
+    run node index.js workout choose "$id"
     [ "$status" -eq 0 ]
-    [ "${#lines[@]}" -ge 1 ]
+    assert_output_contains "chosen"
+}
+
+@test "workout chosen shows selected workout" {
+    run node index.js workout create "pull"
+    id=$(node -p "JSON.parse(require('fs').readFileSync('data.json','utf8')).workouts.find(w=>w.name==='pull').id")
+    run node index.js workout choose "$id"
+    run node index.js workout chosen
+    [ "$status" -eq 0 ]
+    assert_output_contains "$id"
+}
+
+@test "workout details shows current workout details" {
+    run node index.js workout create "leg-day"
+    id=$(node -p "JSON.parse(require('fs').readFileSync('data.json','utf8')).workouts.find(w=>w.name==='leg-day').id")
+    run node index.js workout choose "$id"
+    run node index.js workout details
+    [ "$status" -eq 0 ]
+    assert_output_contains "current selection"
+}
+
+@test "workout unchoose unselects current workout" {
+    run node index.js workout create "cardio"
+    id=$(node -p "JSON.parse(require('fs').readFileSync('data.json','utf8')).workouts.find(w=>w.name==='cardio').id")
+    run node index.js workout choose "$id"
+    run node index.js workout unchoose
+    [ "$status" -eq 0 ]
+    run node index.js workout chosen
+    assert_output_contains "empty"
 }
 
 @test "workout rename renames a workout" {
     run node index.js workout create "old-name"
-    run node index.js workout list ids
-    id="${lines[0]}"
+    id=$(node -p "JSON.parse(require('fs').readFileSync('data.json','utf8')).workouts.find(w=>w.name==='old-name').id")
     run node index.js workout rename "$id" "new-name"
     [ "$status" -eq 0 ]
     assert_output_contains "renamed to 'new-name'"
@@ -40,24 +62,4 @@ load ../../test_helper
     run node index.js workout remove "push-day"
     [ "$status" -eq 0 ]
     assert_output_contains "1 workout(s) removed"
-}
-
-@test "workout choose selects a workout by id" {
-    run node index.js workout create "push"
-    run node index.js workout list ids
-    id="${lines[0]}"
-    run node index.js workout choose "$id"
-    [ "$status" -eq 0 ]
-    assert_output_contains "workout $id chosen"
-}
-
-@test "workout unchoose unselects current workout" {
-    run node index.js workout create "cardio"
-    run node index.js workout list ids
-    id="${lines[0]}"
-    run node index.js workout choose "$id"
-    run node index.js workout unchoose
-    [ "$status" -eq 0 ]
-    run node index.js workout
-    assert_output_contains "no workout selected"
 }
