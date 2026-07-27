@@ -15,7 +15,7 @@
             "plan": "dsfeqvx14cv"
         }
     ],
-    "workout": null,
+    "workoutId": null,
     "sets": [
         {
             "id": "ydqjmotqlco",
@@ -24,12 +24,7 @@
             "amount": 0
         }
     ],
-    "set": {
-        "id": "ydqjmotqlco",
-        "reps": 5,
-        "unitOfMeasure": "lbs",
-        "amount": 10
-    },
+    "setId": null,
     "plans": [
         {
             "type": "plan",
@@ -42,11 +37,20 @@
             "name": "5x5"
         }
     ],
+    "planId": "dsfeqvx14cv",
+    "exercises": [],
+    "exerciseId": null,
+    "workout": null,
+    "set": {
+        "id": "ydqjmotqlco",
+        "reps": 5,
+        "unitOfMeasure": "lbs",
+        "amount": 10
+    },
     "plan": {
         "type": "plan",
         "id": "dsfeqvx14cv",
         "name": "5x5"
     },
-    "exercises": [],
     "exercise": null
 }
