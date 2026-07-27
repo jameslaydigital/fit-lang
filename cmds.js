@@ -62,12 +62,27 @@ class Commands {
                 return;
             }
         }
+
+        // at this point, we didn't find anything.
+        // normalize and show usage for subcommands
+
+        const normalized_subcmd = tokens.slice().join(" ").trim();
         if (tokens.length === 0) {
             console.log("fit - a fitness tracking platform");
-            console.log("---------------------------------");
+            console.log("─────────────────────────────────");
             console.log("available commands:");
             cmds.displayRoutes();
+            return;
         }
+
+        if (this.getRoutes(normalized_subcmd).length === 0) {
+            console.error("fit error: command '%s' not recognized.", normalized_subcmd);
+            return;
+        }
+
+        console.log("%s options:\n───────────────\n", normalized_subcmd);
+        this.displayRoutes(normalized_subcmd);
+
     }
 
 }

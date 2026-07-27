@@ -1,6 +1,6 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
-import { check, checkFloat, currentSet, currentExercise } from "../../helpers.js";
+import { list, choose, check, checkFloat, currentSet, currentExercise } from "../../helpers.js";
 
 data.sets = data.sets ?? {};
 data.setId = data.setId ?? null;
@@ -18,22 +18,8 @@ data.setId = data.setId ?? null;
 // 2 reps of 20 minutes
 // 50 reps of 1 bodyweight
 
-cmds.register("set", async function() {
-    const set = currentSet();
-    console.log("set - actual work logged for an exercise");
-    console.log("selected: ", set);
-    cmds.displayRoutes("set ");
-});
-
 cmds.register("set list", async function() {
-    console.log("sets:");
-    if (data.sets.length === 0) {
-        console.log("no sets. Add one with `set create`");
-        return;
-    }
-    for (const set of data.sets) {
-        console.log("\t- %s", JSON.stringify(set));
-    }
+    return list("sets");
 });
 
 cmds.register("set create", async function() {
@@ -51,15 +37,7 @@ cmds.register("set create", async function() {
 });
 
 cmds.register("set choose", async function([id]) {
-    check(() => id);
-    const set = data.sets.find(s => s.id === id);
-    if (set) {
-        data.setId = set.id;
-        await save();
-        console.log("set %s chosen", id);
-    } else {
-        console.log("set id not found: %s", id);
-    }
+    await choose("setId", "sets", id);
 });
 
 cmds.register("set unchoose", async function() {

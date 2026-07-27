@@ -1,32 +1,25 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
-import { check, checkIndex, currentExercise, currentWorkout } from "../../helpers.js";
+import { list, choose, check, checkIndex, currentExercise, currentWorkout } from "../../helpers.js";
 
 data.exercises = data.exercises ?? [];
 data.exerciseId = data.exerciseId ?? null;
 
-cmds.register("exercise", async function() {
+cmds.register("exercise status", async function() {
     const exercise = currentExercise();
-    console.log("exercise - a single exercise");
     if (exercise === null) {
         console.log("no exercise selected.");
     } else {
         console.log("selected exercise: (%s) '%s'", exercise.id, exercise.name);
     }
-    console.log("-------------------------------");
-    console.log("options:");
-    cmds.displayRoutes("exercise ");
+});
+
+cmds.register("exercise list", async function() {
+    return list("exercises");
 });
 
 cmds.register("exercise choose", async function([id]) {
-    check(() => id);
-
-    const exercise = data.exercises.find(e => e.id === id);
-    check(() => exercise, `no exercise found for ${id}`);
-
-    data.exerciseId = exercise.id;
-    await save();
-    console.log("exercise %s chosen", id);
+    await choose("exerciseId", "exercises", id);
 });
 
 cmds.register("exercise unchoose", async function() {

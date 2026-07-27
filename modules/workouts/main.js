@@ -1,50 +1,16 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
-import { check, checkFloat, checkIndex, currentWorkout, currentPlan } from "../../helpers.js";
+import { list, choose, check, checkFloat, checkIndex, currentWorkout, currentPlan } from "../../helpers.js";
 
 data.workouts = data.workouts ?? {};
 data.workoutId = data.workoutId ?? null;
 
-cmds.register("workout", function() {
-    const workout = currentWorkout();
-    console.log("workout - a series of exercises");
-    if (workout === null) {
-        console.log("no workout selected.");
-    } else {
-        console.log("selected workout: (%s) '%s'", workout.id, workout.name);
-    }
-    console.log("-------------------------------");
-    console.log("options:");
-    cmds.displayRoutes("workout ");
-});
-
-cmds.register("workout list ids", async function() {
-    for (const workout of data.workouts) {
-        console.log("%s", workout.id);
-    }
-});
-
 cmds.register("workout list", async function() {
-    console.log("workouts:");
-    if (data.workouts.length === 0) {
-        console.log("no workouts. Add one with `workout create`");
-        return;
-    }
-    for (const workout of data.workouts) {
-        console.log("\t- %s", JSON.stringify(workout));
-    }
+    return list("workouts");
 });
 
 cmds.register("workout choose", async function([id]) {
-    check(() => id);
-    const workout = data.workouts.find(w => w.id === id);
-    if (workout) {
-        data.workoutId = workout.id;
-        await save();
-        console.log("workout %s chosen", id);
-    } else {
-        console.log("workout id not found: %s", id);
-    }
+    await choose("workoutId", "workouts", id);
 });
 
 cmds.register("workout unchoose", async function() {

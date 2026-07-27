@@ -24,7 +24,7 @@
             "amount": 0
         }
     ],
-    "setId": null,
+    "setId": "ydqjmotqlco",
     "plans": [
         {
             "type": "plan",
@@ -37,9 +37,17 @@
             "name": "5x5"
         }
     ],
-    "planId": "dsfeqvx14cv",
-    "exercises": [],
-    "exerciseId": null,
+    "planId": "vgll9up735c",
+    "exercises": [
+        {
+            "type": "exercise",
+            "id": "sx1cbug36ll",
+            "order": 0,
+            "name": "curls",
+            "workout": null
+        }
+    ],
+    "exerciseId": "sx1cbug36ll",
     "workout": null,
     "set": {
         "id": "ydqjmotqlco",

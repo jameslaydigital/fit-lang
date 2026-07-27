@@ -1,35 +1,26 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
-import { check, currentPlan } from "../../helpers.js";
+import { list, choose, check, currentPlan } from "../../helpers.js";
 
 data.plans = data.plans ?? [];
 data.planId = data.planId ?? null;
 
 // plan CRUD
-cmds.register("plan", async function() {
+cmds.register("plan status", async function() {
     const plan = currentPlan();
-    console.log("plan - workout plans");
     if (plan === null) {
         console.log("no plan selected.");
     } else {
         console.log("selected plan: (%s) '%s'", plan.id, plan.name);
     }
-    console.log("--------------------");
-    console.log("options:");
-    cmds.displayRoutes("plan ");
+});
+
+cmds.register("plan list", async function() {
+    return list("plans");
 });
 
 cmds.register("plan choose", async function([id]) {
-
-    check(() => id);
-    const plan = data.plans.find(p => p.id === id);
-    if (plan) {
-        data.planId = plan.id;
-        await save();
-        console.log("plan %s chosen", id);
-    } else {
-        console.log("plan id not found: ", id);
-    }
+    await choose("planId", "plans", id);
 });
 
 cmds.register("plan unchoose", async function() {
@@ -43,16 +34,6 @@ cmds.register("plan unchoose", async function() {
     console.log("plan '%s' unselected", plan.id);
 });
 
-cmds.register("plan list", async function() {
-    console.log("plans:");
-    if (data.plans.length === 0) {
-        console.log("\tNo plans. Add one with `plan create <name>`");
-        return;
-    }
-    for (const plan of data.plans) {
-        console.log("\t- %s: %s", plan.id, plan.name);
-    }
-});
 
 cmds.register("plan list ids", async function() {
     for (const plan of data.plans) {
