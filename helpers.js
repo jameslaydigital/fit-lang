@@ -1,6 +1,34 @@
 import { data, save } from "./storage.js";
 import { cmds } from "./cmds.js";
 
+export async function chosen(idProp) {
+    console.log("  → %s", data[idProp] ?? "empty");
+}
+
+export async function details(dstProp, srcProp) {
+    const e = data[srcProp].find(e => e.id === data[dstProp]) ?? null;
+    if (!e) {
+        console.log("no %s chosen", srcProp);
+        return;
+    }
+    console.log("%s: current selection → %s", srcProp, JSON.stringify(e, null, 4));
+}
+
+export async function unchoose(dstProp="", srcProp="") {
+    if (!data[dstProp]) {
+        console.log("  → %s cleared.", dstProp);
+        return;
+    }
+    const item = data[srcProp].find(e => e.id === data[dstProp]) ?? null;
+
+    data[dstProp] = null;
+    await save();
+    if (!item) {
+        console.log("  → %s cleared.", dstProp);
+    }
+    console.log("%s → '%s' unselected", srcProp, item.id);
+}
+
 export async function choose(dstProp, srcProp, id) {
     check(() => id);
     const list = data[srcProp].filter(e => e.id.startsWith(id));

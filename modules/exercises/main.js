@@ -1,34 +1,15 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
-import { list, choose, check, checkIndex, currentExercise, currentWorkout } from "../../helpers.js";
+import { list, details, chosen, choose, unchoose, check, checkIndex, currentExercise, currentWorkout } from "../../helpers.js";
 
 data.exercises = data.exercises ?? [];
 data.exerciseId = data.exerciseId ?? null;
 
-cmds.register("exercise status", async function() {
-    const exercise = currentExercise();
-    if (exercise === null) {
-        console.log("no exercise selected.");
-    } else {
-        console.log("selected exercise: (%s) '%s'", exercise.id, exercise.name);
-    }
-});
-
-cmds.register("exercise list", async function() {
-    return list("exercises");
-});
-
-cmds.register("exercise choose", async function([id]) {
-    await choose("exerciseId", "exercises", id);
-});
-
-cmds.register("exercise unchoose", async function() {
-    check(() => data.exerciseId, "no exercise selected");
-    const exercise = currentExercise();
-    data.exerciseId = null;
-    await save();
-    console.log("exercise '%s' unselected", exercise.id);
-});
+cmds.register("exercise choose",   ([id]) => choose("exerciseId", "exercises", id));
+cmds.register("exercise chosen",   ()     => chosen("exerciseId"));
+cmds.register("exercise details",  ()     => details("exerciseId", "exercises"));
+cmds.register("exercise list",     ()     => list("exercises"));
+cmds.register("exercise unchoose", ()     => unchoose("exerciseId", "exercises"));
 
 cmds.register("exercise create", async function([name]) {
     check(() => name);

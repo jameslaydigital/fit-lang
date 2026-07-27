@@ -24,7 +24,7 @@
             "amount": 0
         }
     ],
-    "setId": "ydqjmotqlco",
+    "setId": null,
     "plans": [
         {
             "type": "plan",
@@ -47,7 +47,7 @@
             "workout": null
         }
     ],
-    "exerciseId": "sx1cbug36ll",
+    "exerciseId": null,
     "workout": null,
     "set": {
         "id": "ydqjmotqlco",

@@ -1,6 +1,6 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
-import { list, choose, check, checkFloat, currentSet, currentExercise } from "../../helpers.js";
+import { list, details, chosen, choose, unchoose, check, checkFloat, currentSet, currentExercise } from "../../helpers.js";
 
 data.sets = data.sets ?? {};
 data.setId = data.setId ?? null;
@@ -18,9 +18,11 @@ data.setId = data.setId ?? null;
 // 2 reps of 20 minutes
 // 50 reps of 1 bodyweight
 
-cmds.register("set list", async function() {
-    return list("sets");
-});
+cmds.register("set choose",   ([id]) => choose("setId", "sets", id));
+cmds.register("set chosen",   ()     => chosen("setId"));
+cmds.register("set details",  ()     => details("setId", "sets"));
+cmds.register("set list",     ()     => list("sets"));
+cmds.register("set unchoose", ()     => unchoose("setId", "sets"));
 
 cmds.register("set create", async function() {
     const set = {
@@ -34,21 +36,6 @@ cmds.register("set create", async function() {
     data.sets.push(set);
     await save();
     console.log("set created and selected: %s", set.id);
-});
-
-cmds.register("set choose", async function([id]) {
-    await choose("setId", "sets", id);
-});
-
-cmds.register("set unchoose", async function() {
-    if (!data.setId) {
-        console.log("no set selected");
-        return;
-    }
-    const set = currentSet();
-    data.setId = null;
-    await save();
-    console.log("set '%s' unselected", set.id);
 });
 
 cmds.register("set reps", async function([reps]) {

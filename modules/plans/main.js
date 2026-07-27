@@ -1,46 +1,16 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
-import { list, choose, check, currentPlan } from "../../helpers.js";
+import { list, chosen, choose, unchoose, details, check, currentPlan } from "../../helpers.js";
 
 data.plans = data.plans ?? [];
 data.planId = data.planId ?? null;
 
 // plan CRUD
-cmds.register("plan status", async function() {
-    const plan = currentPlan();
-    if (plan === null) {
-        console.log("no plan selected.");
-    } else {
-        console.log("selected plan: (%s) '%s'", plan.id, plan.name);
-    }
-});
-
-cmds.register("plan list", async function() {
-    return list("plans");
-});
-
-cmds.register("plan choose", async function([id]) {
-    await choose("planId", "plans", id);
-});
-
-cmds.register("plan unchoose", async function() {
-    if (!data.planId) {
-        console.log("no plan selected");
-        return;
-    }
-    const plan = currentPlan();
-    data.planId = null;
-    await save();
-    console.log("plan '%s' unselected", plan.id);
-});
-
-
-cmds.register("plan list ids", async function() {
-    for (const plan of data.plans) {
-        console.log(plan.id);
-    }
-});
-
+cmds.register("plan choose",   ([id]) => choose("planId", "plans", id));
+cmds.register("plan chosen",   ()     => chosen("planId"));
+cmds.register("plan details",  ()     => details("planId", "plans"));
+cmds.register("plan list",     ()     => list("plans"));
+cmds.register("plan unchoose", ()     => unchoose("planId", "plans"));
 
 cmds.register("plan create", async function([name]) {
     check(() => name);

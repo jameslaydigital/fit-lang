@@ -1,28 +1,15 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
-import { list, choose, check, checkFloat, checkIndex, currentWorkout, currentPlan } from "../../helpers.js";
+import { list, details, chosen, choose, unchoose, check, checkFloat, checkIndex, currentWorkout, currentPlan } from "../../helpers.js";
 
 data.workouts = data.workouts ?? {};
 data.workoutId = data.workoutId ?? null;
 
-cmds.register("workout list", async function() {
-    return list("workouts");
-});
-
-cmds.register("workout choose", async function([id]) {
-    await choose("workoutId", "workouts", id);
-});
-
-cmds.register("workout unchoose", async function() {
-    if (!data.workoutId) {
-        console.log("no workout selected");
-        return;
-    }
-    const workout = currentWorkout();
-    data.workoutId = null;
-    await save();
-    console.log("workout '%s' unselected", workout.id);
-});
+cmds.register("workout choose",   ([id]) => choose("workoutId", "workouts", id));
+cmds.register("workout chosen",   ()     => chosen("workoutId"));
+cmds.register("workout details",  ()     => details("workoutId", "workouts"));
+cmds.register("workout list",     ()     => list("workouts"));
+cmds.register("workout unchoose", ()     => unchoose("workoutId", "workouts"));
 
 cmds.register("workout create", async function([name]) {
     check(() => name);
