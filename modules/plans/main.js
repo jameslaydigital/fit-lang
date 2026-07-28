@@ -6,7 +6,6 @@ import { print, error } from "../../io.js";
 data.plans = data.plans ?? [];
 data.planId = data.planId ?? null;
 
-// plan CRUD
 cmds.register("plan choose",   ([id]) => choose("planId", "plans", id));
 cmds.register("plan chosen",   ()     => chosen("planId"));
 cmds.register("plan details",  ()     => details("planId", "plans"));
