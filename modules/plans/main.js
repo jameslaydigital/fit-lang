@@ -1,6 +1,7 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
 import { list, chosen, choose, unchoose, details, check, currentPlan } from "../../helpers.js";
+import { print, error } from "../../io.js";
 
 data.plans = data.plans ?? [];
 data.planId = data.planId ?? null;
@@ -22,8 +23,8 @@ cmds.register("plan create", async function([name]) {
     data.plans.push(plan);
     data.planId = plan.id;
     save();
-    console.log("created new plan '%s'", name);
-    console.log("plan %s selected", plan.id);
+    print("created new plan '%s'", name);
+    print("plan %s selected", plan.id);
 });
 
 cmds.register("plan rename", async function([id, newname]) {
@@ -31,13 +32,13 @@ cmds.register("plan rename", async function([id, newname]) {
     check(() => newname);
     const plan = data.plans.find(p => p.id === id);
     if (!plan) {
-        console.log("no plan found by id '%s'", id);
+        print("no plan found by id '%s'", id);
         return;
     }
     const oldname = plan.name;
     plan.name = newname;
     await save();
-    console.log("plan '%s' renamed to '%s'", oldname, newname);
+    print("plan '%s' renamed to '%s'", oldname, newname);
 });
 
 cmds.register("plan remove", async function([id]) {
@@ -47,9 +48,9 @@ cmds.register("plan remove", async function([id]) {
     const diff = length - data.plans.length;
     await save();
     if (diff === 0) {
-        console.log("no plans removed");
+        print("no plans removed");
     } else {
-        console.log("%d plan(s) removed", diff);
+        print("%d plan(s) removed", diff);
     }
 });
 

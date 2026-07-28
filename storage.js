@@ -10,10 +10,14 @@ export async function save() {
 }
 
 export async function load() {
-    const dataJson = await adapter.read("data.json");
-    const stackJson = await adapter.read("stack.json");
-    Object.assign(data, JSON.parse(dataJson));
-    Object.assign(stack, JSON.parse(stackJson));
+    try {
+        const dataJson = await adapter.read("data.json");
+        Object.assign(data, JSON.parse(dataJson));
+    } catch {}
+    try {
+        const stackJson = await adapter.read("stack.json");
+        Object.assign(stack, JSON.parse(stackJson));
+    } catch {}
 }
 
 export const data = {};

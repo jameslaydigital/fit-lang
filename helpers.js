@@ -1,22 +1,23 @@
 import { data, save } from "./storage.js";
 import { cmds } from "./cmds.js";
+import { print, error, exit } from "./io.js";
 
 export async function chosen(idProp) {
-    console.log("  → %s", data[idProp] ?? "empty");
+    print("  → %s", data[idProp] ?? "empty");
 }
 
 export async function details(dstProp, srcProp) {
     const e = data[srcProp].find(e => e.id === data[dstProp]) ?? null;
     if (!e) {
-        console.log("no %s chosen", srcProp);
+        print("no %s chosen", srcProp);
         return;
     }
-    console.log("%s: current selection → %s", srcProp, JSON.stringify(e, null, 4));
+    print("%s: current selection → %s", srcProp, JSON.stringify(e, null, 4));
 }
 
 export async function unchoose(dstProp="", srcProp="") {
     if (!data[dstProp]) {
-        console.log("  → %s cleared.", dstProp);
+        print("  → %s cleared.", dstProp);
         return;
     }
     const item = data[srcProp].find(e => e.id === data[dstProp]) ?? null;
@@ -24,46 +25,46 @@ export async function unchoose(dstProp="", srcProp="") {
     data[dstProp] = null;
     await save();
     if (!item) {
-        console.log("  → %s cleared.", dstProp);
+        print("  → %s cleared.", dstProp);
     }
-    console.log("%s → '%s' unselected", srcProp, item.id);
+    print("%s → '%s' unselected", srcProp, item.id);
 }
 
 export async function choose(dstProp, srcProp, id) {
     check(() => id);
     const list = data[srcProp].filter(e => e.id.startsWith(id));
     if (list.length > 1) {
-        console.error("ambigous record id for '%s': %d", srcProp, id);
+        error("ambigous record id for '%s': %d", srcProp, id);
         if (list.length > 10) {
-            console.log("ids: %s\n...more records...", JSON.stringify(data[srcProp].slice(0, 10), null, 4));
+            print("ids: %s\n...more records...", JSON.stringify(data[srcProp].slice(0, 10), null, 4));
             return;
         }
-        console.log("ids: %s", JSON.stringify(data[srcProp].slice(0, 10), null, 4));
+        print("ids: %s", JSON.stringify(data[srcProp].slice(0, 10), null, 4));
         return;
     }
 
     const item = list.pop() ?? null;
     if (!item) {
-        console.error("error: no %s found with id prefix '%s'", srcProp, id);
+        error("error: no %s found with id prefix '%s'", srcProp, id);
         return;
     }
     data[dstProp] = item.id;
     await save();
     if (typeof item.name === "string") {
-        console.log("%s '%s' (%s) chosen", dstProp, item.id, item.name);
+        print("%s '%s' (%s) chosen", dstProp, item.id, item.name);
     } else {
-        console.log("%s '%s' chosen", dstProp, item.id);
+        print("%s '%s' chosen", dstProp, item.id);
     }
 }
 
 export async function list(srcProp) {
-    console.log("%s", srcProp);
-    console.log("───────────\n");
+    print("%s", srcProp);
+    print("───────────\n");
     for (const e of data[srcProp]) {
-        console.log("  → %s: %s", e.id, e.name ?? JSON.stringify({...e, id: undefined}));
+        print("  → %s: %s", e.id, e.name ?? JSON.stringify({...e, id: undefined}));
     }
-    console.log("\n───────────");
-    console.log("%d total", data[srcProp].length);
+    print("\n───────────");
+    print("%d total", data[srcProp].length);
 }
 
 export function currentWorkout() {
@@ -93,10 +94,10 @@ export function check(fn, msg="") {
             msg = fn.toString().split("=>").pop().trim();
             msg = `must provide parameter: '${msg}'`;
         }
-        console.error(msg);
-        console.log("usage:");
+        error(msg);
+        print("usage:");
         cmds.showCurrentUsage();
-        process.exit(1);
+        exit(1);
     }
     return value;
 }
@@ -109,9 +110,9 @@ export function checkFloat(fn, msg="") {
             msg = fn.toString().split("=>").pop().trim();
             msg = `'${msg}' is not a valid number`;
         }
-        console.error(msg);
+        error(msg);
         cmds.showCurrentUsage();
-        process.exit(1);
+        exit(1);
     }
     return num;
 }
@@ -124,9 +125,9 @@ export function checkIndex(fn, msg="") {
             msg = fn.toString().split("=>").pop().trim();
             msg = `'${msg}' is not a valid number`;
         }
-        console.error(msg);
+        error(msg);
         cmds.showCurrentUsage();
-        process.exit(1);
+        exit(1);
     }
     return num;
 

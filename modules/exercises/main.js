@@ -1,6 +1,7 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
 import { list, details, chosen, choose, unchoose, check, checkIndex, currentExercise, currentWorkout } from "../../helpers.js";
+import { print, error } from "../../io.js";
 
 data.exercises = data.exercises ?? [];
 data.exerciseId = data.exerciseId ?? null;
@@ -22,7 +23,7 @@ cmds.register("exercise create", async function([name]) {
     });
 
     await save();
-    console.log("exercise '%s' created", name);
+    print("exercise '%s' created", name);
 });
 
 cmds.register("exercise remove", async function([name]) {
@@ -32,9 +33,9 @@ cmds.register("exercise remove", async function([name]) {
     await save();
     const diff = length - data.exercises.length;
     if (diff === 0) {
-        console.log("no exercises removed");
+        print("no exercises removed");
     } else {
-        console.log("%d exercise(s) removed", diff);
+        print("%d exercise(s) removed", diff);
     }
 });
 
@@ -45,7 +46,7 @@ cmds.register("exercise rename", async function([id, newName]) {
     const exercise = data.exercises.find(e => e.id === id);
     check(() => exercise, "error: exercise not found");
 
-    console.log("exercise '%s' renamed to '%s'", exercise.name, newName);
+    print("exercise '%s' renamed to '%s'", exercise.name, newName);
     exercise.name = newName;
     await save();
 });
@@ -56,13 +57,13 @@ cmds.register("workout exercise add", async function([exerciseId]) {
 
     const workout = currentWorkout();
     if (!workout) {
-        console.error("no selected workout - choose one with `workout choose <id>`");
+        error("no selected workout - choose one with `workout choose <id>`");
         return;
     }
 
     const exercise = data.exercises.find(e => e.id === exerciseId);
     if (!exercise) {
-        console.error("no exercise found by id '%s'", exerciseId);
+        error("no exercise found by id '%s'", exerciseId);
         return;
     }
 
@@ -70,7 +71,7 @@ cmds.register("workout exercise add", async function([exerciseId]) {
     exercise.order = workoutExercises.length;
     exercise.workout = workout.id;
     await save();
-    console.log(
+    print(
         "exercise '%s' added to workout '%s'",
         exercise.name,
         workout.name
@@ -82,18 +83,18 @@ cmds.register("workout exercise remove", async function([exerciseId]) {
 
     const workout = currentWorkout();
     if (!workout) {
-        console.error("no selected workout - choose one with `workout choose <id>`");
+        error("no selected workout - choose one with `workout choose <id>`");
         return;
     }
 
     const exercise = data.exercises.find(e => e.id === exerciseId);
     if (!exercise) {
-        console.error("no exercise found by id '%s'", exerciseId);
+        error("no exercise found by id '%s'", exerciseId);
         return;
     }
 
     if (exercise.workout !== workout.id) {
-        console.error("exercise '%s' is not in workout '%s'", exercise.name, workout.name);
+        error("exercise '%s' is not in workout '%s'", exercise.name, workout.name);
         return;
     }
 
@@ -107,7 +108,7 @@ cmds.register("workout exercise remove", async function([exerciseId]) {
     }
 
     await save();
-    console.log(
+    print(
         "exercise '%s' removed from workout '%s'",
         exercise.name,
         workout.name
@@ -119,13 +120,13 @@ cmds.register("workout exercise reorder", async function([exerciseId, newPositio
     const pos = checkIndex(newPosition);
     const target = data.exercises.find(e => e.id === exerciseId);
     if (!target) {
-        console.error("workout exercise reorder: no exercise found by id '%s'", exerciseId);
+        error("workout exercise reorder: no exercise found by id '%s'", exerciseId);
         return;
     }
 
     const workout = currentWorkout();
     if (!workout) {
-        console.error("workout exercise reorder: no selected workout");
+        error("workout exercise reorder: no selected workout");
         return;
     }
 
@@ -154,5 +155,5 @@ cmds.register("workout exercise reorder", async function([exerciseId, newPositio
     }
 
     await save();
-    console.log("reordered.");
+    print("reordered.");
 });

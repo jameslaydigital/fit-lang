@@ -1,6 +1,7 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
 import { list, details, chosen, choose, unchoose, check, checkFloat, checkIndex, currentWorkout, currentPlan } from "../../helpers.js";
+import { print, error } from "../../io.js";
 
 data.workouts = data.workouts ?? {};
 data.workoutId = data.workoutId ?? null;
@@ -23,7 +24,7 @@ cmds.register("workout create", async function([name]) {
     });
 
     await save();
-    console.log("workout '%s' created", name);
+    print("workout '%s' created", name);
 });
 
 cmds.register("workout remove", async function([name]) {
@@ -33,9 +34,9 @@ cmds.register("workout remove", async function([name]) {
     await save();
     const diff = length - data.workouts.length;
     if (diff === 0) {
-        console.log("no workouts removed");
+        print("no workouts removed");
     } else {
-        console.log("%d workout(s) removed", diff);
+        print("%d workout(s) removed", diff);
     }
 });
 
@@ -43,10 +44,10 @@ cmds.register("workout read", async function([name]) {
     check(() => name);
     const workout = data.workouts.find(w => w.name === name);
     if (!workout) {
-        console.log("no workout found by name '%s'", name);
+        print("no workout found by name '%s'", name);
         return;
     }
-    console.log("%s", JSON.stringify(workout, null, 4));
+    print("%s", JSON.stringify(workout, null, 4));
 });
 
 cmds.register("workout rename", async function([id, newName]) {
@@ -54,11 +55,11 @@ cmds.register("workout rename", async function([id, newName]) {
     check(() => newName);
     const workout = data.workouts.find(w => w.id === id);
     if (!workout) {
-        console.error("error: workout '%s' does not exist", id);
+        error("error: workout '%s' does not exist", id);
         return;
     }
     
-    console.log("workout '%s' renamed to '%s'", workout.name, newName);
+    print("workout '%s' renamed to '%s'", workout.name, newName);
     workout.name = newName;
     await save();
 });
@@ -68,13 +69,13 @@ cmds.register("plan add workout", async function([workoutId]) {
 
     const plan = currentPlan();
     if (!plan) {
-        console.error("no selected plan - choose one with `plan choose <id>`");
+        error("no selected plan - choose one with `plan choose <id>`");
         return;
     }
 
     const workout = data.workouts.find(w => w.id === workoutId);
     if (!workout) {
-        console.error("no workout found by id '%s'", workoutId);
+        error("no workout found by id '%s'", workoutId);
         return;
     }
 
@@ -82,7 +83,7 @@ cmds.register("plan add workout", async function([workoutId]) {
     workout.order = planWorkouts.length;
     workout.plan = plan.id;
     await save();
-    console.log(
+    print(
         "workout '%s' added to plan '%s'",
         workout.name,
         plan.name
@@ -94,18 +95,18 @@ cmds.register("plan workout remove", async function([workoutId]) {
 
     const plan = currentPlan();
     if (!plan) {
-        console.error("no selected plan - choose one with `plan choose <id>`");
+        error("no selected plan - choose one with `plan choose <id>`");
         return;
     }
 
     const workout = data.workouts.find(w => w.id === workoutId);
     if (!workout) {
-        console.error("no workout found by id '%s'", workoutId);
+        error("no workout found by id '%s'", workoutId);
         return;
     }
 
     if (workout.plan !== plan.id) {
-        console.error("workout '%s' is not in plan '%s'", workout.name, plan.name);
+        error("workout '%s' is not in plan '%s'", workout.name, plan.name);
         return;
     }
 
@@ -119,7 +120,7 @@ cmds.register("plan workout remove", async function([workoutId]) {
     }
 
     await save();
-    console.log(
+    print(
         "workout '%s' removed from plan '%s'",
         workout.name,
         plan.name
@@ -131,13 +132,13 @@ cmds.register("plan workout reorder", async function([workoutId, newPosition]) {
     const pos = checkIndex(() => newPosition);
     const target = data.workouts.find(w => w.id === workoutId);
     if (!target) {
-        console.error("plan workout reorder: no workout found by id '%s'", workoutId);
+        error("plan workout reorder: no workout found by id '%s'", workoutId);
         return;
     }
 
     const plan = currentPlan();
     if (!plan) {
-        console.error("plan workout reorder: no selected plan");
+        error("plan workout reorder: no selected plan");
         return;
     }
 
@@ -166,28 +167,28 @@ cmds.register("plan workout reorder", async function([workoutId, newPosition]) {
     }
 
     await save();
-    console.log("reordered.");
+    print("reordered.");
 });
 
 cmds.register("plan workout", async function() {
-    console.log("plan workout");
-    console.log("------------");
+    print("plan workout");
+    print("------------");
     cmds.displayRoutes("plan workout ");
 });
 
 cmds.register("plan workout list", async function() {
     const plan = currentPlan();
     if (!plan) {
-        console.error("no selected plan - choose one with `plan choose <id>`");
+        error("no selected plan - choose one with `plan choose <id>`");
         return;
     }
 
-    console.log("workouts in plan '%s'", plan.name);
-    console.log("---------------------");
-    console.log("");
+    print("workouts in plan '%s'", plan.name);
+    print("---------------------");
+    print("");
     const planWorkouts = data.workouts.filter(w => w.plan === plan.id);
     planWorkouts.sort((a, b) => a.order - b.order);
     for (const workout of planWorkouts) {
-        console.log("  %d) %s: %s", workout.order, workout.id, workout.name);
+        print("  %d) %s: %s", workout.order, workout.id, workout.name);
     }
 });

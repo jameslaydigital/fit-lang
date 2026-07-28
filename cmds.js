@@ -1,3 +1,5 @@
+import { print, error } from "./io.js";
+
 class Commands {
 
     constructor() {
@@ -25,9 +27,9 @@ class Commands {
                 .replace(/\[/g, "<")
                 .replace(/]/g, ">")
                 .replace(/, /g, "> <");
-            console.log("  > %s %s", route, opts);
+            print("  > %s %s", route, opts);
         } else {
-            console.log("  > %s", route);
+            print("  > %s", route);
         }
     }
 
@@ -50,7 +52,7 @@ class Commands {
     }
 
     // returns function or null
-    dispatch(tokens) {
+    async dispatch(tokens) {
 
         // grab maximum match before grabbing shorter matches:
         for (let i = tokens.length; i > 0; i--) {
@@ -58,7 +60,7 @@ class Commands {
             if (typeof this.routes[normalized_subcmd] === "function") {
                 this.lastRoute = normalized_subcmd;
                 const handler = this.routes[normalized_subcmd];
-                handler(tokens.slice(i));
+                await handler(tokens.slice(i));
                 return;
             }
         }
@@ -68,19 +70,19 @@ class Commands {
 
         const normalized_subcmd = tokens.slice().join(" ").trim();
         if (tokens.length === 0) {
-            console.log("fit - a fitness tracking platform");
-            console.log("─────────────────────────────────");
-            console.log("available commands:");
+            print("fit - a fitness tracking platform");
+            print("─────────────────────────────────");
+            print("available commands:");
             cmds.displayRoutes();
             return;
         }
 
         if (this.getRoutes(normalized_subcmd).length === 0) {
-            console.error("fit error: command '%s' not recognized.", normalized_subcmd);
+            error("fit error: command '%s' not recognized.", normalized_subcmd);
             return;
         }
 
-        console.log("%s options:\n───────────────\n", normalized_subcmd);
+        print("%s options:\n───────────────\n", normalized_subcmd);
         this.displayRoutes(normalized_subcmd);
 
     }

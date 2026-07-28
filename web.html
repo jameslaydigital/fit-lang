@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>fit-lang</title>
+<script type="module">
+import { setAdapter, load } from "./storage.js";
+import { localStorageAdapter } from "./adapters/localStorage.js";
+import { cmds } from "./cmds.js";
+import { setOutput } from "./io.js";
+
+import "./modules/plans/main.js";
+import "./modules/workouts/main.js";
+import "./modules/exercises/main.js";
+import "./modules/sets/main.js";
+import "./modules/stack/main.js";
+
+setAdapter(localStorageAdapter);
+
+const output = [];
+setOutput({
+    print: (...args) => output.push(printf(...args)),
+    error: (...args) => output.push("ERROR: " + printf(...args)),
+    exit: () => {},
+});
+
+await load();
+
+const params = new URLSearchParams(window.location.search);
+const cmd = params.get("cmd") || "plan list";
+await cmds.dispatch(cmd.split(" "));
+document.body.innerHTML = "<pre>" + output.join("\n") + "</pre>";
+
+function printf(fmt, ...rest) {
+    let output = "";
+    for (let i = 0; i < fmt.length; i++) {
+        if (fmt[i] === "%") {
+            i++;
+            const specifier = fmt.at(i);
+            switch (specifier) {
+                case "d":
+                    output += Number(rest.shift());
+                    break;
+                case "s":
+                    output += String(rest.shift());
+                    break;
+                case "o":
+                    output += JSON.stringify(rest.shift());
+                    break;
+                default:
+                    output += specifier;
+            }
+        } else {
+            output += fmt[i];
+        }
+    }
+    return output;
+}
+window.printf = printf;
+</script>

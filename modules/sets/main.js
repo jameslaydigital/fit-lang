@@ -1,6 +1,7 @@
 import { data, stack, save } from "../../storage.js";
 import { cmds } from "../../cmds.js";
 import { list, details, chosen, choose, unchoose, check, checkFloat, currentSet, currentExercise } from "../../helpers.js";
+import { print, error } from "../../io.js";
 
 data.sets = data.sets ?? {};
 data.setId = data.setId ?? null;
@@ -35,7 +36,7 @@ cmds.register("set create", async function() {
     data.setId = set.id;
     data.sets.push(set);
     await save();
-    console.log("set created and selected: %s", set.id);
+    print("set created and selected: %s", set.id);
 });
 
 cmds.register("set reps", async function([reps]) {
@@ -43,23 +44,23 @@ cmds.register("set reps", async function([reps]) {
 
     const set = currentSet();
     if (!set) {
-        console.error("no set selected");
+        error("no set selected");
         return;
     }
     const repsNum = parseFloat(reps);
     if (isNaN(repsNum) || repsNum < 0) {
-        console.error("invalid reps value");
+        error("invalid reps value");
         return;
     }
     set.reps = repsNum;
     await save();
-    console.log("set %s reps set to %d", set.id, repsNum);
+    print("set %s reps set to %d", set.id, repsNum);
 });
 
 cmds.register("set amount", async function([amount, unitOfMeasure]) {
     const set = currentSet();
     if (!set) {
-        console.error("no set selected");
+        error("no set selected");
         return;
     }
     const amountNum = checkFloat(() => amount);
@@ -68,7 +69,7 @@ cmds.register("set amount", async function([amount, unitOfMeasure]) {
         set.unitOfMeasure = unitOfMeasure;
     }
     await save();
-    console.log("set %s amount set to %d %s", set.id, amountNum, set.unitOfMeasure);
+    print("set %s amount set to %d %s", set.id, amountNum, set.unitOfMeasure);
 });
 
 cmds.register("exercise add set", async function([setId]) {
@@ -76,19 +77,19 @@ cmds.register("exercise add set", async function([setId]) {
 
     const exercise = currentExercise();
     if (!exercise) {
-        console.error("no selected exercise - choose one with `exercise choose <id>`");
+        error("no selected exercise - choose one with `exercise choose <id>`");
         return;
     }
 
     const set = data.sets.find(s => s.id === setId);
     if (!set) {
-        console.error("no set found by id '%s'", setId);
+        error("no set found by id '%s'", setId);
         return;
     }
 
     set.exercise = exercise.id;
     await save();
-    console.log(
+    print(
         "set '%s' added to exercise '%s'",
         set.id,
         exercise.name
@@ -101,10 +102,10 @@ cmds.register("set remove", async function([id]) {
     data.sets = data.sets.filter(s => s.id !== id);
     const diff = length - data.sets.length;
     if (diff === 0) {
-        console.log("no sets removed");
+        print("no sets removed");
         return;
     }
 
     await save();
-    console.log("removed %d sets", diff);
+    print("removed %d sets", diff);
 });
