@@ -1,11 +1,37 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>fit-lang</title>
+<style>
+html, body {
+    padding: 0;
+    border: none;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    color: #08f;
+    font-family: sans-serif;
+}
+
+h1 {
+    font-weight: 300;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+hr {
+    border: none;
+    border-bottom: #08f8 solid 1px;
+}
+
+</style>
 <script type="module">
 import { setAdapter, load } from "./storage.js";
 import { localStorageAdapter } from "./adapters/localStorage.js";
 import { cmds } from "./cmds.js";
 import { setOutput } from "./io.js";
+import { printf } from "./lib/stdlib.js";
+import { tokenize } from "./lib/parser.js";
 
 import "./modules/plans/main.js";
 import "./modules/workouts/main.js";
@@ -29,151 +55,13 @@ const params = new URLSearchParams(window.location.search);
 const cmd = params.get("cmd") || "web dashboard";
 await cmds.dispatch(cmd.split(" "));
 
-function printf(fmt, ...rest) {
-    let output = "";
-    for (let i = 0; i < fmt.length; i++) {
-        if (fmt[i] === "%") {
-            i++;
-            const specifier = fmt.at(i);
-            switch (specifier) {
-                case "d":
-                    output += Number(rest.shift());
-                    break;
-                case "s":
-                    output += String(rest.shift());
-                    break;
-                case "o":
-                    output += JSON.stringify(rest.shift());
-                    break;
-                default:
-                    output += specifier;
-            }
-        } else {
-            output += fmt[i];
-        }
+window.command = async function(element) {
+    const commands = element.dataset.command.split(";").map(w => w.trim());
+    for (const command of commands) {
+        const tokens = tokenize(command);
+        console.log("tokens: ", tokens);
+        await cmds.dispatch(tokenize(command));
     }
-    return output;
-}
-window.printf = printf;
-
-
-// bash style tokenization
-
-
-// grammar for my bash-style-parser:
-`
-cmd         → token+        { $0 }
-
-token       → strings       { $0 }
-            → word          { $0 }
-            → space         { $0 }
-
-strings     → string+       { $0.join("") }
-
-string      → double_str    { $0 }
-            → single_str    { $0 }
-
-double_str  → ["] [^"]* ["] { $1.join("") }
-single_str  → ['] [^']* ['] { $1.join("") }
-
-word        → [^'" \t\n\r]+ { $0.join("") }
-space       → [ \t\n\r]+    { $0.join("") }
-`
-
-function parse_cmd(input) {
-    const state = {
-        i: 0,
-        input,
-        next() {
-            return state.input[state.i++];
-        },
-        curr() {
-            return state.input[state.i];
-        }
-    };
-
-    const tokens = [];
-    let token = "";
-
-    while ((token = parse_token(state))) {
-        tokens.push(token);
-    }
-    return tokens;
-}
-
-window.parse = parse_cmd;
-
-function parse_token(state) {
-    let token = 
-        parse_space(state) ||
-        parse_word(state)  ||
-        parse_strings(state);
-    return token;
-}
-
-function parse_word(state) {
-    let c = "";
-    let token = "";
-    while (c = state.curr()) {
-        if ([" ", "\t", "\n", "\r", "'", '"'].includes(c)) {
-            break;
-        }
-        token += state.next();
-    }
-    return token;
-}
-
-function parse_space(state) {
-    // any series of characters that is not \t\n\r or " "
-    let c = "";
-    let token = "";
-    while (c = state.curr()) {
-        if ([" ", "\n", "\t", "\r"].includes(c)) {
-            token += state.next();
-        } else {
-            break;
-        }
-    }
-    return token;
-}
-
-function parse_strings(state) {
-    let token;
-    const tokens = [];
-    while (token = parse_string(state)) {
-        tokens.push(token);
-    }
-    return tokens.join("");
-}
-
-// handles both single and double quote strings:
-function parse_string(state) {
-    let c = '';
-    let token = '';
-    let quote = state.curr();
-    const start = state.i;
-
-    // eat first quote
-    if (!["'", '"'].includes(quote)) {
-        return "";
-    }
-    state.next();
-
-    let is_closed = false;
-    while (c = state.curr()) {
-        if (c === quote) {
-            state.next();
-            is_closed = true;
-            break;
-        }
-        token += state.next();
-    }
-
-    if (is_closed === false) {
-        throw new Error(`expected closing (${quote}) when parsing string: →${state.input.slice(start, state.i)}←`);
-    }
-
-    return token;
 }
 
 </script>

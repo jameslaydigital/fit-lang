@@ -11,5 +11,12 @@ cmds.register("web dashboard", async function() {
     for (const plan of data.plans) {
         output += `<li>${plan.id}: ${plan.name}</li>`;
     }
+    output += `<button data-command="web load data; web dashboard" onclick="window.command(this)">load test data</button>`;
     document.body.innerHTML = output;
+});
+
+cmds.register("web load data", async function() {
+    for (const key of Object.keys(data)) {
+        localStorage.setItem(key, data[key]);
+    }
 });
