@@ -3,7 +3,7 @@ import { cmds } from "../../cmds.js";
 import { list, details, chosen, choose, unchoose, check, checkFloat, currentSet, currentExercise } from "../../helpers.js";
 import { print, error } from "../../io.js";
 
-data.sets = data.sets ?? {};
+data.sets = data.sets ?? [];
 data.setId = data.setId ?? null;
 
 // set is {

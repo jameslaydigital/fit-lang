@@ -3,7 +3,7 @@ import { cmds } from "../../cmds.js";
 import { list, details, chosen, choose, unchoose, check, checkFloat, checkIndex, currentWorkout, currentPlan } from "../../helpers.js";
 import { print, error } from "../../io.js";
 
-data.workouts = data.workouts ?? {};
+data.workouts = data.workouts ?? [];
 data.workoutId = data.workoutId ?? null;
 
 cmds.register("workout choose",   ([id]) => choose("workoutId", "workouts", id));
