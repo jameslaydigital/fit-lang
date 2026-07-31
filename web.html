@@ -44,9 +44,26 @@ setAdapter(localStorageAdapter);
 
 const output = [];
 setOutput({
+
     print: (...args) => console.log(...args),
+
     error: (...args) => console.error(...args),
+
+    render: async (html) => {
+
+        document.body.innerHTML = html;
+
+        console.log("render called");
+        await new Promise(r => setTimeout(r));
+
+        // attach command listeners:
+        for (const element of document.querySelectorAll("[data-command]")) {
+            element.onclick = () => window.command(element);
+        }
+    },
+
     exit: () => {},
+
 });
 
 await load();

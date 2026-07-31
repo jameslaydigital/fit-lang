@@ -27,10 +27,10 @@ cmds.register("workout create", async function([name]) {
     print("workout '%s' created", name);
 });
 
-cmds.register("workout remove", async function([name]) {
-    check(() => name);
+cmds.register("workout remove", async function([workout_id]) {
+    check(() => workout_id);
     const length = data.workouts.length;
-    data.workouts = data.workouts.filter(w => w.name !== name);
+    data.workouts = data.workouts.filter(w => w.id !== workout_id);
     await save();
     const diff = length - data.workouts.length;
     if (diff === 0) {
@@ -40,11 +40,11 @@ cmds.register("workout remove", async function([name]) {
     }
 });
 
-cmds.register("workout read", async function([name]) {
-    check(() => name);
-    const workout = data.workouts.find(w => w.name === name);
+cmds.register("workout read", async function([workout_id]) {
+    check(() => workout_id);
+    const workout = data.workouts.find(w => w.workout_id === workout_id);
     if (!workout) {
-        print("no workout found by name '%s'", name);
+        print("no workout found by workout_id '%s'", workout_id);
         return;
     }
     print("%s", JSON.stringify(workout, null, 4));
