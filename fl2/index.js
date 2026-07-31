@@ -28,7 +28,7 @@ const data = {
         if (typeof result === "undefined") {
             throw new ReferenceError(`token: ${currToken} no object found for id ${id}`);
         }
-        return result;
+        return JSON.parse(result);
     },
 
     set(id, value) {
@@ -43,10 +43,10 @@ const data = {
     },
 };
 
-function process(input) {
+async function process(input) {
     const tokens = input.split(/\/+/g).toReversed().map(w => decodeURIComponent(w)).filter(Boolean);
     for (const token of tokens) {
-        command(token);
+        await command(token);
     }
 }
 
@@ -54,13 +54,13 @@ function makeID() {
     return Math.random().toString(36).split(".").pop().slice(0,6);
 }
 
-function command(token) {
+async function command(token) {
 
     // set token for error reporting:
     currToken = token;
     console.log("cmd: %s", token);
 
-    let id, obj, arg, lhs, rhs;
+    let id, obj, arg, lhs, rhs, i;
 
     switch (token) {
 
@@ -69,7 +69,6 @@ function command(token) {
             stack.push(obj);
             break;
 
-        // a plan is a name and id
         case "create-plan":
             stack.push({
                 type: "plan",
@@ -108,9 +107,9 @@ function command(token) {
             break;
 
         case "plan-add-workout":
-            lhs = stack.pop("exercise");
-            rhs = stack.pop("set");
-            lhs.exerciseId = rhs.id;
+            lhs = stack.pop("plan");
+            rhs = stack.pop("workout");
+            rhs.planId = lhs.id;
             stack.push(rhs);
             stack.push(lhs);
             break;
@@ -151,6 +150,34 @@ function command(token) {
             console.log("dropped: ", stack.pop());
             break;
 
+        case "show-plan-list":
+            console.log("plans: ");
+            i = 0;
+            for (const key of Object.keys(localStorage)) {
+                obj = data.get(key);
+                if (obj.type && obj.type === "plan") {
+                    i++;
+                    console.log("%s: %s", obj.id, obj.name);
+                }
+            }
+            console.log("%d items", i);
+            break;
+
+        case "show-plan-details":
+            obj = data.get(stack.pop());
+            id = obj.id;
+            console.log("plan %s → '%s'", obj.id, obj.name);
+            console.log("─────────────────────");
+            console.log("");
+
+            for (const key of Object.keys(localStorage)) {
+                obj = data.get(key);
+                if (obj.type === "workout" && obj.planId === id) {
+                    console.log("  • %s → %s (%s)", obj.id, obj.planId, obj.name);
+                }
+            }
+            break;
+
         default:
             if (token.startsWith("'")) {
                 stack.push(token.slice(1));
@@ -163,27 +190,45 @@ function command(token) {
 }
 
 
+// the advantage in serializing these function calls
+// is that you can record and play back the calls.
+// You can also execute them directly from the URL.
+// That could bad because there's no way to prevent duplicate actions from
+// refreshing the page, and enables click-jacking attacks where malicious
+// payloads are delivered through an innocent-looking URL.  It is therefore
+// recommended that read-only access is granted in the context of evaluating a
+// window hash, and another, privileged command dispatch method is used when
+// mutations are needed. This way, people can use the window hash to see
+// "pages" or "views", but interactions with the elments on those views are
+// required in order to perform real work.
+
 process([
+
     "save/create-set/5/50/'lbs",
     "save/create-exercise/'curls",
     "exercise-add-set",
-    "swap",             // set now at top
-    "update",           // save the set
-    "drop",             // drop the set, exercise is now top
+    "swap",                 // set now at top
+    "update",               // save the set
+    "drop",                 // drop the set, exercise is now top
 
     "create-workout/'arms",
-    "save",             // save the workout
+    "save",                 // save the workout
     "workout-add-exercise", // exercise points to workout
-    "swap",             // swap workout with exercise, exercise now at top
-    "update",           // update exercise
-    "drop",             // drop exercise, workout now at top
+    "swap",                 // swap workout with exercise, exercise now at top
+    "update",               // update exercise
+    "drop",                 // drop exercise, workout now at top
 
     "create-plan/'basic",
-    "save",             // save plan basic
-    "plan-add-workout", // add plan workout
-    "swap",             // swap so workout on top
-    "save",             // save workout
-    "drop",             // drop workout, plan on top
+    "save",                 // save plan basic
+    "plan-add-workout",     // add plan workout
+    "swap",                 // swap so workout on top
+    "save",                 // save workout
+    "drop",                 // drop workout, plan on top
     "drop",
+
+    "show-plan-list",
+    "show-plan-details/4y0i2c",
+
 ].toReversed().join("/"));
+
 console.log(JSON.stringify(stack, null, 4));
