@@ -190,17 +190,22 @@ async function command(token) {
 }
 
 
-// the advantage in serializing these function calls
-// is that you can record and play back the calls.
-// You can also execute them directly from the URL.
-// That could bad because there's no way to prevent duplicate actions from
+// the advantage in serializing these function calls is that you can record and
+// play back the calls. You can also execute them directly from the URL. That
+// could bad because there's no way to prevent duplicate actions from
 // refreshing the page, and enables click-jacking attacks where malicious
-// payloads are delivered through an innocent-looking URL.  It is therefore
+// payloads are delivered through an innocent-looking URL. It is therefore
 // recommended that read-only access is granted in the context of evaluating a
 // window hash, and another, privileged command dispatch method is used when
 // mutations are needed. This way, people can use the window hash to see
 // "pages" or "views", but interactions with the elments on those views are
 // required in order to perform real work.
+// This level of indirection can be useful for these problems:
+//
+// • writing tests
+// • language-agnostic (eases communication between systems, portability, etc...)
+//      (this means, for instance, you could implement something on the front end AND the back end)
+// • facilitating different implementations
 
 process([
 
@@ -232,3 +237,4 @@ process([
 ].toReversed().join("/"));
 
 console.log(JSON.stringify(stack, null, 4));
+
